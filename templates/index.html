@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Article Recommender</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-image: url("{{ url_for('static', filename='images/bgimage.jpeg') }}");
+            background-size: cover;
+            color: white;
+            font-family: 'Roboto', sans-serif;
+        }
+        .container {
+            margin-top: 50px;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            padding: 20px;
+        }
+        h1 {
+            color: #007bff;
+        }
+        .result {
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 10px;
+            color: black;
+        }
+        .article {
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 10px;
+        }
+        .button-container {
+            margin-top: 20px;
+        }
+        .icon {
+            margin-right: 10px;
+        }
+    </style>
+    <script>
+        async function getRecommendations() {
+            const articleIndex = document.getElementById('articleIndex').value;
+            const numRecommendations = document.getElementById('numRecommendations').value;
+
+            const response = await fetch('/recommend', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ article_index: parseInt(articleIndex), num_recommendations: parseInt(numRecommendations) }),
+            });
+
+            const data = await response.json();
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '';
+
+            data.forEach(rec => {
+                const p = document.createElement('p');
+                p.textContent = `Article: ${rec.title}, Similarity Score: ${rec.similarity_score.toFixed(2)}`;
+                p.className = 'result';
+                resultsDiv.appendChild(p);
+            });
+        }
+
+        // Function to display news articles
+        function displayArticles(articles) {
+            const articlesDiv = document.getElementById('newsArticles');
+            articlesDiv.innerHTML = '';
+
+            articles.forEach(article => {
+                const articleDiv = document.createElement('div');
+                articleDiv.className = 'article';
+                articleDiv.innerHTML = `<h5>${article.title}</h5><p>${article.text}</p><a href="${article.url}" target="_blank">Read more</a>`;
+                articlesDiv.appendChild(articleDiv);
+            });
+        }
+    </script>
+</head>
+<body>
+    <div class="container text-center">
+        <img src="{{ url_for('static', filename='images/headerim.jpeg') }}" class="img-fluid" alt="Header Image">
+        <h1>News Recommender</h1>
+        
+        <div class="form-group">
+            <label for="articleIndex">Article Index (0, 1, 2):</label>
+            <input type="number" id="articleIndex" class="form-control" min="0" max="2" required>
+        </div>
+        <div class="form-group">
+            <label for="numRecommendations">Number of Recommendations:</label>
+            <input type="number" id="numRecommendations" class="form-control" min="1" value="2" required>
+        </div>
+        
+        <div class="button-container text-center">
+            <button class="btn btn-primary" onclick="getRecommendations()"><i class="fas fa-search"></i> Get Recommendations</button>
+        </div>
+        
+        <div id="results" class="mt-4"></div>
+
+        <h5 class="mt-4">Latest News Articles</h5>
+        <div id="newsArticles" class="mt-4"></div>
+        
+        <div class="mt-4">
+            <h5>News Categories</h5>
+            <i class="fas fa-futbol icon"></i> Sports
+            <i class="fas fa-laptop icon"></i> Technology
+            <i class="fas fa-newspaper icon"></i> Politics
+        </div>
+    </div>
+</body>
+</html>
